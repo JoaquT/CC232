@@ -11,6 +11,7 @@ public class Producto {
         this.day = day;
         this.month = month;
         this.year = year;
+        next = null;
     }
     int getday(){return day;}
     int getmonth(){return month;}
@@ -20,5 +21,17 @@ public class Producto {
     void setnext(Producto next){
         this.next = next;
     }
+    public boolean compareTo(Producto p) {
+        if (this.year < p.year) return true;
+        if (this.year > p.year) return false;
+    
+        if (this.month < p.month) return true;
+        if (this.month > p.month) return false;
+    
+        return this.day < p.day;
+    }
+    
+    
+    
 
 }

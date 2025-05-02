@@ -5,15 +5,16 @@ public class ListaCDoble{
     public Scanner sc;
 
     public ListaCDoble(){
-        head=tail=null
+        head=tail=null;
     }
     void agregarEntrada(int x){
+        NodoDoble nuevo = new NodoDoble(x);
         if(head==null){
             head=tail=nuevo;
             return;
         }
         NodoDoble curr = head; //1->
-        NodoDoble nuevo = new NodoDoble(x);
+        
         while(curr.getnext()!=head){
             curr = curr.getnext();
         }
@@ -22,7 +23,6 @@ public class ListaCDoble{
 
     }
     void crearLista(int x){
-        int x;
         System.out.println("Digite -1 para terminar");
         do{
             x = sc.nextInt();

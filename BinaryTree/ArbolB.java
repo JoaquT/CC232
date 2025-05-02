@@ -27,7 +27,7 @@ class ArbolB{
     void crearArbol(){
     System.out.println("Cuantos niveles desea crear");
     int niveles;
-    int n;
+    int n = 0;
     try {
         niveles = sc.nextInt();
          n = (int) pow(2,niveles) - 1;
