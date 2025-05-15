@@ -1,0 +1,159 @@
+//Hacer un backup de base de datos (desde cmd)
+C:\Users\.... (donde se encuentre el archivo backup) psql -U postgres -d nombre_basedatos -f nombre_archivo.backup
+Luego entrar a psql Shell y verificar la base de datos actualizada
+
+
+//Tipos de datos
+INTEGER -> números enteros
+SERIAL -> Auto incremental
+VARCHAR(n) -> cadenas de texto (hasta n letras)
+CHAR(n)->fija el tamaño exacto a n caracteres. si se ingresa menos se llena con espacios en blanco
+TEXT -> texto largo
+NUMERIC(p,s) -> números con decimales (p=total,s=decimales)
+DATE -> Fechas
+BOOLEAN -> true/false
+
+
+//Creando una tabla 	
+					
+CREATE TABLE nombre_tabla(					
+	columna1 tipo_dato [restricciones], //PRIMARY KEY , NOT NULL (colocarlos no siempre es necesario)			
+	columna2 tipo_dato [restricciones],			
+	…							
+	);
+//Agregar una columna
+
+ALTER TABLE nombre_tabla
+ADD COLUMN nombre_columna tipo_dato [restricciones];
+ej:
+ALTER TABLE Empleado 
+ADD COLUMN edad INTEGER;
+//Eliminar una columna
+ALTER TABLE nombre_tabla
+DROP COLUMN nombre_columna;
+ej:
+ALTER TABLE Empleado
+DROP COLUMN edad;
+
+//Modificar el tamaño de datos de una columna
+ALTER TABLE tabla 
+ALTER COLUMN columna 
+TYPE nuevo_tipo;
+
+//Eliminar contenido de la tabla
+truncate table nombre_tabla;
+
+//Cambiar el tipo de una columna
+
+ALTER TABLE nombre_tabla
+ALTER COLUMN nombre_column TYPE nuevo_tipo;
+ej:
+ALTER TABLE Empleado
+ALTER COLUMN salario TYPE INTEGER;
+
+//Renombrar una columna 
+
+ALTER TABLE nombre_tabla
+RENAME COLUMN nombre_antiguo TO nombre_nuevo;
+
+//Insertando datos en la tabla 
+INSERT INTO nombre_tabla (columna1, columna2, ...)
+VALUES (valor1, valor2, ...);
+ej:
+INSERT INTO Empleado(codEmp, nombre, salario, codDep)
+VALUES (1,'Laura Pérez', 2500.00, 10);
+
+//múltiples filas
+INSERT INTO Empleado (codEmp, nombre, salario, codDep) VALUES
+(2, 'Carlos Ruiz', 3000.00, 10),
+(3, 'Ana Gómez', 2800.00, 20);
+
+//Update - para modificar una o más tuplas existentes
+UPDATE tabla 
+set columna1 = nuevo_valor1, columna2 = nuevo_valor2
+where condición;
+
+
+//Eliminando datos en la tabla 
+DELETE FROM nombre_tabla
+WHERE condición;
+
+//Selección de tuplas
+SELECT * FROM nombre_tabla WHERE condiciones_...
+//Selección sin repetidos
+SELECT DISTINCT nombre_columna FROM nombre_tabla  (para seleccionar todos SELECT ALL nombre_columna FROM nombre_tabla)
+//Limit, para especificar el numero de registros a devolver
+SELECT nombre_columna FROM nombre_tabla LIMIT numero  
+ej:
+Select * from personas limit 2;
+
+//Operador IN 
+Se usa para especificar multiples valores en una clausula WHERE
+SELECT nombre_columna FROM nombre_tabla WHERE nombre_columna IN (valor1,valor2,...)
+ej:
+SELECT * FROM Personas
+WHERE lastname IN (‘Hansen’, ‘Pettersen’)
+
+//Proyección 
+SELECT nombre_columna FROM nombre-tabla WHERE condiciones... 
+
+//Operación unión 
+
+SELECT nombre_columna FROM nombre_tabla UNION SELECT nombre_columna FROM nombre_tabla;
+ej:
+mibanco=# SELECT "nombre-cliente" FROM impositor UNION
+mibanco-# SELECT "nombre-cliente" FROM prestatario;
+//uniendo todo 
+SELECT nombre_columna FROM nombre_tabla UNION ALL SELECT nombre_columna FROM nombre_tabla;
+
+//Diferencia
+
+SELECT nombre_columna FROM nombre_tabla EXCEPT SELECT nombre_columna FROM nombre_tabla;
+
+//Intersección
+SELECT nombre_columna FROM nombre_tabla INTERSECT SELECT "nombre_columna" FROM nombre_tabla;
+
+//producto cartesiano
+
+SELECT * FROM nombre_tabla,nombre_tabla2,...;
+
+//NATURAL JOIN -->toma las columnas en común
+SELECT * FROM nombre_tabla NATURAL JOIN  nombre_tabla …
+
+//LIKE ->Comodines
+
+SELECT * FROM nombre_tabla WHERE nombre_columna like 'simbolo_caracter%'; -->que empiece por 
+
+//Group by  --> agrupa filas que tienen valores iguales en una o más columnas, con el fin de aplicar funciones de agregación
+como sum ,avg,count,max,min,etc
+Select columna_agrupada,funcion_agregada(columna) from tabla group by columna_agrupada;
+Ej:
+SELECT cliente, SUM(monto) AS total
+FROM Ventas
+GROUP BY cliente;
+
+
+
+//JOIN...USING()  --> más seguro si hay más de una columna en común que no se desea comparar
+
+SELECT * FROM nombre_tabla join nombre_tabla using(nombre_columna)
+
+//JOIN ..ON() -->especificando cuáles columnas unir incluso aunque no tengan el mismo nombre
+
+SELECT * FROM nombre_tabla join nombre_tabla on (a.nombre_columna = b.nombre_columna); -->ej
+
+//cross join es simplemente producto cartesiano
+SELECT * FROM nombre_tabla cross join nombre_tabla;
+
+//left outer join se muestran las filas de la tabla izquierda y las filas coincidentes de la derecha, las no coincidencias se llenan con null
+
+SELECT * FROM tabla_izquierda LEFT JOIN tabla_derecha ON tabla_izquierda.columna = tabla_derecha.columna;
+
+// también es posible hacer especificaciones como select *from empleados where departamento_id is NULL;
+
+// Seleccionando departamentos donde no hay empleados
+select departamento_nombre from departamentos where departamento_id in (select departamento_id from departamentos except select departamento_id from empleados);
+
+//full outer join selecciona las filas de ambas tablas
+select * from tabla1 full outer join tabla2 on tabla1.columna = tabla2.columna;
+								
