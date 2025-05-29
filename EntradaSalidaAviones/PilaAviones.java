@@ -4,9 +4,13 @@ public class PilaAviones{
     public PilaAviones(){
         head = null;
         tam = 0;
-    }
+    
     void entradaAvion(String name){
         NodoPila nuevo = new NodoPila(name);
+        if(head==null){
+        head = nuevo;
+        return;
+        }
         nuevo.setnext(head);
         head = nuevo;
         tam++;
