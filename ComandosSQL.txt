@@ -156,4 +156,12 @@ select departamento_nombre from departamentos where departamento_id in (select d
 
 //full outer join selecciona las filas de ambas tablas
 select * from tabla1 full outer join tabla2 on tabla1.columna = tabla2.columna;
+
+//Sirve para comparar un valor escalar con todos los datos arrojados por la tabla de una subconsulta, dado por ALL
+SELECT * 
+FROM marineros
+WHERE rating > ALL (
+  SELECT rating FROM marineros WHERE nombre = 'Homero'
+);
+
 								
