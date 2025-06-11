@@ -164,4 +164,17 @@ WHERE rating > ALL (
   SELECT rating FROM marineros WHERE nombre = 'Homero'
 );
 
+Ejemplo de restricciones:
+
+restricciones=# create table cliente(
+restricciones(# codigocliente int not null,
+restricciones(# nombre varchar(30) not null,
+restricciones(# codciudad int,
+restricciones(# primary key(codigocliente),
+restricciones(# foreign key (codciudad) references
+restricciones(# ciudad(codigociudad) on delete set null);
+CREATE TABLE
+
+Luego al eliminar alguna fila de la tabla ciudad con una clave primaria, en la tabla cliente, se reemplazara el atributo que hace referencia a ciudad, a null
+
 								
