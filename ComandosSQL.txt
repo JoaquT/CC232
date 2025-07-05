@@ -176,5 +176,410 @@ restricciones(# ciudad(codigociudad) on delete set null);
 CREATE TABLE
 
 Luego al eliminar alguna fila de la tabla ciudad con una clave primaria, en la tabla cliente, se reemplazara el atributo que hace referencia a ciudad, a null
+Restricción Unique:
+- Asegura que los datos contenidos en una columna o grupo de columnas sea unico en relacion a todas las filas de la tabla
+Ejemplo: Create table producto(nroProducto integer, nombre varchar(30),precio real,unique(nroProducto));
 
-								
+ON DELETE SET DEFAULT:
+CREATE TABLE departamento (
+    id_depto TEXT PRIMARY KEY,
+    nombre TEXT
+);
+
+CREATE TABLE empleado (
+    id_empleado TEXT PRIMARY KEY,
+    nombre TEXT,
+    id_depto TEXT DEFAULT 'DEP000',  -- valor por defecto si se elimina el depto
+    FOREIGN KEY (id_depto) REFERENCES departamento(id_depto)
+        ON DELETE SET DEFAULT
+);
+ON DELETE RESTRICT es una regla de integridad referencial que impide eliminar una fila de la tabla padre si existen registros relacionados en la tabla hija.
+CREATE TABLE departamento (
+    id_depto TEXT PRIMARY KEY,
+    nombre TEXT
+);
+
+CREATE TABLE empleado (
+    id_empleado TEXT PRIMARY KEY,
+    nombre TEXT,
+    id_depto TEXT,
+    FOREIGN KEY (id_depto) REFERENCES departamento(id_depto)
+        ON DELETE RESTRICT
+);
+ON DELETE CASCADE es una regla en claves foráneas que elimina automáticamente las filas relacionadas en la tabla hija cuando se elimina una fila en la tabla padre.
+CREATE TABLE departamento (
+    id_depto TEXT PRIMARY KEY,
+    nombre TEXT
+);
+CREATE TABLE empleado (
+    id_empleado TEXT PRIMARY KEY,
+    nombre TEXT,
+    id_depto TEXT,
+    FOREIGN KEY (id_depto) REFERENCES departamento(id_depto)
+        ON DELETE CASCADE
+);
+
+RESTRICCIONES SEMANTICAS
+Las restricciones semánticas en bases de datos son reglas que imponen condiciones lógicas adicionales sobre los datos, más allá de las restricciones estructurales como tipos de datos o claves primarias. Estas reglas reflejan el significado y la lógica del dominio del problema que modela la base de datos.
+
+Restricción de valores válidos:
+
+Un campo edad debe ser mayor que 0.
+CHECK (edad > 0)
+
+Restricción de rango lógico:
+
+Un atributo calificacion debe estar entre 0 y 20.
+CHECK (calificacion BETWEEN 0 AND 20)
+
+CREATE TABLE empleado (
+    id TEXT PRIMARY KEY,
+    nombre TEXT,
+    salario NUMERIC CHECK (salario >= 0)
+);
+
+
+---DOMINIOS-----
+Un dominio en PostgreSQL es un tipo de dato basado en otro tipo, pero con restricciones extra (CHECK, NOT NULL, etc.).
+EJEMPLO:CREATE DOMAIN edad_pos AS INTEGER
+CHECK (VALUE > 0);
+CREATE TABLE persona (
+    id SERIAL PRIMARY KEY,
+    nombre TEXT NOT NULL,
+    edad edad_pos  -- ¡Aquí usamos el dominio!
+);
+-- ✔ Correcto
+INSERT INTO persona (nombre, edad) VALUES ('Ana', 25);
+
+-- ❌ Falla (violación del dominio)
+INSERT INTO persona (nombre, edad) VALUES ('Luis', -5);
+-- ERROR:  value for domain edad_pos violates check constraint "edad_pos_check"
+MAS EJEMPLOS:
+CREATE DOMAIN nombrevalido as varchar(40);
+CREATE DOMAIN logico as boolean
+CHECK(VALUE IN (TRUE,FALSE))
+DEFAULT TRUE;
+
+CREATE DOMAIN nota_valida AS numeric(5,2)
+CHECK (VALUE >= 0.00 AND VALUE <= 20.00);
+
+CREATE DOMAIN tiposocio as char(1)
+check(value in ('P','A'));
+---En un dominio, debes referirte al valor insertado como VALUE, no por el nombre del dominio.
+
+----VISTAS---
+Una vista es una tabla virtual basada en el resultado de una consulta (SELECT). No almacena datos por sí misma, sino que muestra datos de otras tablas de manera dinámica.
+Sintaxis básica para crear una vista
+CREATE VIEW nombre_vista AS
+SELECT columna1, columna2
+FROM tabla
+WHERE condición;
+
+Eliminar una vista
+DROP VIEW nombre_vista;
+
+OPCIONES PARA EDITAR UNA VISTA
+✅ 1. Usar CREATE OR REPLACE VIEW
+Es la forma más común y recomendada.
+CREATE OR REPLACE VIEW nombre_vista AS
+SELECT ...
+FROM ...
+WHERE ...;
+Ejemplo:
+---Anterior----
+CREATE VIEW empleados_ventas_activos AS
+SELECT nombre, cargo, salario
+FROM empleados
+WHERE departamento = 'Ventas' AND estado = 'Activo';
+
+---Actualizar----
+CREATE OR REPLACE VIEW empleados_ventas_activos AS
+SELECT nombre, cargo
+FROM empleados
+WHERE departamento = 'Ventas';
+
+
+--VISTAS SOBRE VISTAS---
+Ejemplo paso a paso
+🧱 1. Vista base (simple)
+CREATE VIEW vista_empleados_activos AS
+SELECT id, nombre, departamento
+FROM empleados
+WHERE estado = 'Activo';
+🧱 2. Vista que usa la vista anterior
+CREATE VIEW vista_empleados_activos_ventas AS
+SELECT *
+FROM vista_empleados_activos
+WHERE departamento = 'Ventas';
+
+
+---AUTORIZACION DE ACCESO---
+La autorización de acceso es el mecanismo que permite controlar qué usuarios pueden hacer qué cosas en una base de datos: ver, modificar, eliminar o administrar objetos (tablas, vistas, funciones, esquemas, etc.).
+
+👥 Tipos de usuarios/roles
+En PostgreSQL, se usan roles, que pueden actuar como:
+
+Usuarios (roles que pueden iniciar sesión)
+
+Grupos (roles que agrupan permisos para compartirlos)
+
+Puedes crearlos así:
+
+CREATE ROLE nombre LOGIN PASSWORD 'clave';
+-- o
+CREATE USER nombre WITH PASSWORD 'clave';
+✅ Comando clave: GRANT
+Otorga permisos a un usuario o rol:
+GRANT privilegios ON objeto TO usuario;
+📌 Ejemplos:
+
+-- Dar permiso de SELECT sobre una tabla
+GRANT SELECT ON empleados TO juan;
+
+-- Dar todos los permisos (SELECT, INSERT, UPDATE, DELETE)
+GRANT ALL PRIVILEGES ON empleados TO juan;
+
+-- Permitir uso de un esquema
+GRANT USAGE ON SCHEMA public TO juan;
+
+Comando opuesto: REVOKE
+Quita permisos:
+REVOKE SELECT ON empleados FROM juan;
+Caso práctico
+
+-- Crear usuario
+CREATE USER analista WITH PASSWORD 'clave123';
+
+-- Dar acceso de solo lectura a una tabla
+GRANT SELECT ON empleados TO analista;
+
+-- Permitirle usar el esquema public
+GRANT USAGE ON SCHEMA public TO analista;
+
+🚫 PostgreSQL no permite directamente restringir el acceso a columnas específicas de una tabla.
+Es decir, no puedes decir:
+
+“Dale a este usuario acceso a la tabla empleados excepto a la columna salario”.
+
+Sin embargo, hay soluciones prácticas para lograr este comportamiento.
+
+✅ Soluciones posibles
+🔸 Opción 1: Crear una vista sin la columna restringida
+Esta es la forma más común y segura.
+
+CREATE VIEW vista_empleados_publicos AS
+SELECT id, nombre, cargo
+FROM empleados;
+Luego, otorgas permiso solo a la vista:
+
+GRANT SELECT ON vista_empleados_publicos TO usuario;
+
+---¿Qué es un rol en PostgreSQL?---
+Un rol puede ser:
+
+Un usuario (si tiene permiso para iniciar sesión: LOGIN)
+
+Un grupo de usuarios (si no tiene LOGIN, actúa como contenedor de permisos)
+
+Roles permiten asignar y administrar permisos de manera flexible y reutilizable.
+
+👤 Crear un usuario (rol con login)
+CREATE ROLE juan LOGIN PASSWORD 'clave123';
+O:
+CREATE USER juan WITH PASSWORD 'clave123';
+Ambos comandos son equivalentes en la práctica.
+
+👥 Crear un rol tipo grupo (sin login)
+CREATE ROLE solo_lectura;
+Luego puedes asignar ese rol a usuarios:
+
+GRANT solo_lectura TO juan;
+Ahora, juan hereda todos los permisos de solo_lectura.
+
+🔁 Roles anidados (jerarquía de permisos)
+Puedes tener:
+
+Rol solo_lectura con permisos de SELECT
+
+Rol analistas que incluye solo_lectura
+
+Usuario ana que pertenece a analistas
+
+Esto permite reutilizar permisos sin repetir GRANTs a cada usuario.
+
+🛠️ Otorgar permisos a un rol
+-- Crear rol de solo lectura
+CREATE ROLE solo_lectura;
+
+-- Dar permiso de lectura sobre la tabla
+GRANT SELECT ON empleados TO solo_lectura;
+
+-- Asignar ese rol a un usuario
+GRANT solo_lectura TO pedro;
+Ahora pedro puede hacer SELECT sobre empleados, aunque no se le dio acceso directo.
+
+🔒 Ver roles y relaciones
+📋 Ver todos los roles:
+\du
+🔍 Ver a qué roles pertenece un usuario:
+SELECT rolname
+FROM pg_roles
+WHERE pg_has_role('juan', oid, 'member');
+🧾 Revocar roles y permisos
+REVOKE solo_lectura FROM pedro;
+REVOKE SELECT ON empleados FROM solo_lectura;
+✅ Buenas prácticas
+Usa roles tipo grupo (sin LOGIN) para agrupar permisos.
+
+Usa GRANT ... TO ... para delegar permisos a roles.
+
+Evita dar permisos directamente a cada usuario.
+
+Usa vistas para refinar el acceso a datos sensibles.
+
+Suponga que el DBA cree 4 cuentas U1, U2, U3 y U4.
+■ 1) Solamente U1 debe crear relaciones en la base de
+datos (privilegio de cuenta)
+◻ grant createTab to U1
+■ 2) con esa autorización el usuario U1 puede crear
+relaciones y tendrá TODOS los privilegios sobre ellas
+◻ Suponga que U1 creo las relaciones
+Empleado (codEmp, nombre, categoria, salario)
+Proyecto (#codProy, tipo, descripcion)
+ProyectoEmpleado (# codProy, # codEmp, fechaInicial, fechaFinal)
+Ejemplo Completo
+■ 3) Suponga que U1 quiere dar al usuario U2
+permiso para incluir y remover tuplas en
+Empleado y Proyecto
+◻ grant INSERT, DELETE ON EMPLEADO,PROYECTO TO U2
+■ 4) Suponga que U1 quiere dar al usuario U3
+permiso para recuperar tuplas en Empleado y
+sea capaz de PROPAGAR este privilegio
+◻ grant SELECT ON EMPLEADO TO U3 WITH GRANT OPTION
+
+--Otra forma de manejar las vistas:
+CREATE VIEW vista_ejemplo (nombre, edad) AS
+SELECT 'Luis', 30;
+CREATE VIEW vista_02(codigoproducto,nombreproducto,preciototal) as 
+select idproducto,nombreproducto,preciounidad*unidadesexistencia from productos;
+
+
+
+---Indices-----
+ÍNDICES EN POSTGRESQL
+🔹 ¿Qué es un índice?
+Un índice es una estructura de datos que permite acceder a los datos de una tabla más rápidamente. Funciona como un índice de libro: te lleva directo al lugar donde está la información.
+
+🔹 ¿Para qué sirven?
+Acelerar búsquedas con SELECT, especialmente con WHERE
+
+Mejorar el rendimiento en condiciones de ordenación (ORDER BY), búsqueda por rangos, y uniones (JOIN)
+
+Impulsar el rendimiento en columnas únicas o clave primaria
+
+🔹 Tipos de índices en PostgreSQL
+Tipo de índice	Uso principal	Características
+btree (por defecto)	Comparaciones, rangos (=, <, >, BETWEEN)	Balanceado, rápido
+hash	Comparaciones por igualdad (=)	Rápido, pero limitado
+gin (Generalized Inverted Index)	Búsquedas en arrays, texto completo (tsvector)	Ideal para búsquedas complejas
+gist	Búsquedas geográficas, proximidad	Usado con PostGIS
+spgist, brin, etc.	Casos especiales como grandes volúmenes, geometría, etc.	Más avanzados
+
+🔹 Sintaxis para crear índices
+CREATE INDEX idx_nombre ON tabla(columna);
+Ejemplo:
+
+CREATE INDEX idx_empleado_nombre ON empleados(nombre);
+🔹 Índices únicos
+Aseguran que no haya valores duplicados en una columna o conjunto de columnas:
+
+CREATE UNIQUE INDEX idx_email_unico ON usuarios(email);
+🔹 El motor decide si lo usa
+Los índices no garantizan mejoras automáticas. PostgreSQL decide cuándo usarlos según las estadísticas.
+
+🔹 Cuidados al usar índices
+Aceleran lecturas pero pueden ralentizar escrituras (INSERT, UPDATE, DELETE).
+
+No crees índices innecesarios.
+
+Reindexa si los índices se fragmentan mucho:
+
+REINDEX INDEX idx_nombre;
+
+
+
+---EJEMPLO DE SECUENCIAS----
+CREATE SEQUENCE secuencia_id
+    START WITH 1
+    INCREMENT BY 1
+    MINVALUE 1
+    MAXVALUE 99999
+    CYCLE; 
+Cómo se usa esta secuencia?
+Una vez creada, la usas con la función nextval('nombre_secuencia'), por ejemplo:
+
+SELECT nextval('secuencia_id');
+Esto te devuelve el siguiente número generado por la secuencia.
+
+🔁 ¿Dónde se puede usar nextval?
+En un INSERT directamente:
+
+INSERT INTO libros (id_libro, titulo)
+VALUES (nextval('secuencia_id'), 'Cien años de soledad');
+Como valor por defecto en una tabla:
+
+CREATE TABLE libros (
+    id_libro INTEGER DEFAULT nextval('secuencia_id'),
+    titulo TEXT
+);
+Así, cuando insertes sin pasar id_libro, lo genera solo:
+
+
+INSERT INTO libros (titulo)
+VALUES ('El Principito');
+🔁 ¿Qué hace el CYCLE?
+Si haces esto repetidamente:
+
+
+SELECT nextval('secuencia_id');
+Cuando llegue a 99999, volverá a 1 (en lugar de lanzar un error como lo haría una secuencia normal sin CYCLE).
+
+🔎 Ver estado de la secuencia:
+
+SELECT * FROM pg_sequences WHERE schemaname = 'public';
+O más directo:
+
+SELECT last_value, is_cycled FROM secuencia_id;
+
+----ejemplo:Defina la secuencia suc_01 con primer término 10, último término 750 y razón 10
+CREATE SEQUENCE suc_01
+    START WITH 10
+    INCREMENT BY 10
+    MINVALUE 10
+    MAXVALUE 750;
+
+Perfecto. Vamos a asociar la secuencia suc_01 al atributo codigo de la tabla docente. Aquí tienes dos opciones según si la tabla ya existe o si la estás creando desde cero.
+
+✅ ① Si la tabla ya existe:
+Supongamos que la tabla docente ya tiene una columna llamada codigo. Para asociar la secuencia, haces esto:
+
+ALTER TABLE docente
+ALTER COLUMN codigo SET DEFAULT nextval('suc_01');
+Esto hará que cada vez que insertes un nuevo docente sin especificar el codigo, se use automáticamente el siguiente valor de suc_01.
+
+✅ ② Si estás creando la tabla desde cero:
+Puedes definir el DEFAULT directamente así:
+
+CREATE TABLE docente (
+    codigo INTEGER DEFAULT nextval('suc_01'),
+    nombre TEXT,
+    apellido TEXT
+    -- otros atributos...
+);
+🧪 Ejemplo de uso:
+
+INSERT INTO docente (nombre, apellido) VALUES ('Luis', 'Zamora');
+INSERT INTO docente (nombre, apellido) VALUES ('Ana', 'García');
+
+-- Ver los resultados:
+SELECT * FROM docente;
