@@ -37,3 +37,10 @@ coalesce(a, b, ...)	Retorna el primer valor no nulo	coalesce(null, 'default') �
 nullif(a, b)	Retorna NULL si a = b, sino a	nullif(5, 5) → NULL
 greatest(a, b, ...)	Mayor de varios valores	greatest(1, 5, 3) → 5
 least(a, b, ...)	Menor de varios valores	least(1, 5, 3) → 1
+
+CREATE DOMAIN fecha_formato_texto AS TEXT
+CHECK (
+  VALUE ~ '^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$'
+);
+--TIMESTAMP PARA CFECHA Y HORA---EN ESTE FORMATO EJ: '2025-06-16 14:30:00'
+CREATE DOMAIN fecha_hora_valida AS TIMESTAMP;
