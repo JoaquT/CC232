@@ -1,0 +1,39 @@
+1. Funciones de Cadenas de Texto
+Función	Descripción	Ejemplo
+char_length(text)	Longitud del texto (en caracteres)	char_length('Hola') → 4
+length(text)	Igual que char_length	length('Hola') → 4
+lower(text)	Convierte a minúsculas	lower('HOLA') → 'hola'
+upper(text)	Convierte a mayúsculas	upper('hola') → 'HOLA'
+substring(text, from, for)	Extrae parte del texto	substring('PostgreSQL', 1, 4) → 'Post'
+position(substr in str)	Posición de una subcadena	position('e' in 'verde') → 4
+trim([leading/trailing/both] chars from str)	Elimina caracteres	trim(' x ' from 'xxxHola x') → 'Hola'
+replace(text, buscar, reemplazo)	Reemplaza parte del texto	replace('carro', 'r', 'l') → 'callo'
+concat(a, b, ...)	Concatena cadenas	concat('Hola', ' ', 'Mundo') → 'Hola Mundo'
+
+2. Funciones Numéricas
+Función	Descripción	Ejemplo
+abs(x)	Valor absoluto	abs(-5) → 5
+ceil(x) / ceiling(x)	Redondea hacia arriba	ceil(4.2) → 5
+floor(x)	Redondea hacia abajo	floor(4.8) → 4
+round(x, d)	Redondea con d decimales	round(3.14159, 2) → 3.14
+mod(a, b)	Módulo (resto)	mod(10, 3) → 1
+power(a, b)	Potencia	power(2, 3) → 8
+sqrt(x)	Raíz cuadrada	sqrt(16) → 4
+random()	Número aleatorio entre 0 y 1	random() → 0.827
+
+3. Funciones de Fecha y Hora
+Función	Descripción	Ejemplo
+current_date	Fecha actual	current_date → 2025-06-16
+current_time	Hora actual	current_time → 14:10:34
+now()	Fecha y hora actual	now() → 2025-06-16 14:10:34
+age(timestamp)	Edad desde la fecha dada	age('2000-01-01') → 25 years ...
+extract(part from date)	Extrae partes de una fecha	extract(year from current_date) → 2025
+date_part('month', fecha)	Lo mismo que extract	date_part('month', '2025-06-01') → 6
+to_char(date, formato)	Formatea fecha como texto	to_char(now(), 'YYYY-MM-DD') → '2025-06-16'
+
+4. Otras Funciones Útiles
+Función	Descripción	Ejemplo
+coalesce(a, b, ...)	Retorna el primer valor no nulo	coalesce(null, 'default') → 'default'
+nullif(a, b)	Retorna NULL si a = b, sino a	nullif(5, 5) → NULL
+greatest(a, b, ...)	Mayor de varios valores	greatest(1, 5, 3) → 5
+least(a, b, ...)	Menor de varios valores	least(1, 5, 3) → 1
