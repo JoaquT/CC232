@@ -44,3 +44,195 @@ CHECK (
 );
 --TIMESTAMP PARA CFECHA Y HORA---EN ESTE FORMATO EJ: '2025-06-16 14:30:00'
 CREATE DOMAIN fecha_hora_valida AS TIMESTAMP;
+
+
+
+
+
+
+
+---FUNCIONES----
+create table clientes(
+ClienteId int,
+NombreCliente varchar(40),
+NombreContacto varchar(40),
+Pais varchar(30)
+);
+
+insert into clientes values 
+(10,'Alfreds Futterkiste','Maria Anders','Alemania'),
+(20,'Ana Trujillo Emparedados y helados','Ana Trujillo','Mejico'),
+(30,'Antonio Moreno Taquería','Antonio Moreno','Mejico');
+
+select * from clientes;
+
+create table pedidos(
+PedidoId int,
+ClienteId int,
+fechaPedido date
+);
+
+insert into pedidos values
+(10308,20,'2016-09-24'),
+(10309,30,'2016-09-24'),
+(10310,40,'2016-10-24'),
+(10311,77,'2016-10-24');
+
+select * from pedidos;
+
+create table detalle_pedidos(
+PedidoId int,
+Correl int,
+Producto text,
+Cant int
+);
+
+insert into detalle_pedidos values
+(10308,1,'Azucar domestica rubia Andahuasi',42),
+(10308,2,'Arroz Costeño',73),
+(10309,1,'Leche Vigor',85),
+(10309,2,'Chocolate Sol del Cuzco',83),
+(10309,3,'Sal de Maras',58);
+
+select * from detalle_pedidos;
+
+create or replace function Obtener_detalle(valor int)
+returns void as $$
+	select * from detalle_pedidos where PedidoId=valor;
+
+$$ language 'sql';
+
+
+--Ejecutando funcion
+select * from Obtener_detalle(10308);
+
+
+
+create function Obtener_detalle2(int) returns setof detalle_pedidos as $$
+select * from detalle_pedidos where pedidoid=$1;
+
+$$language 'sql';
+create view datos as 
+select * from Obtener_detalle2(10309) as tabla;
+
+select * from datos;
+------------------------------------------
+--Seleccionar todos los clientes y cualquier pedido que puedan tener
+create function Todos_ClientesyPedidos()
+returns table( 
+ClienteId int,
+NombreCliente varchar(40),
+PedidoId int,
+fechaPedido date) as $$
+
+select C.ClienteId,NombreCliente,PedidoId,fechaPedido from clientes c left join pedidos p on c.ClienteId=p.ClienteId
+order by NombreCliente;
+$$language 'sql';
+
+select Todos_ClientesyPedidos() as tabla001;
+
+
+create table tabla1 (
+x int, y int
+);
+
+insert into tabla1 values
+(1,2),(3,4),(5,6),(7,8);
+
+select * from tabla1;
+
+create function syp(x int,y int,out suma int,out prod int) as $$
+select x+y,x*y;
+$$ language 'sql';
+
+select * from syp(11,42);
+
+select * from tabla1;
+create or replace function syp_con_tabla1(x int,out suma int,out prod int) as $$
+select $1+tabla1.x,$1*tabla1.x from tabla1;
+$$language 'sql';
+
+
+create or replace function syp2_con_tabla2(x int,out suma int,out prod int) 
+returns setof record
+as $$
+select $1+tabla1.x,$1*tabla1.x from tabla1;
+$$language 'sql';
+
+
+select * from syp_con_tabla1(10);
+select * from syp2_con_tabla2(10);
+
+SELECT current_database();
+
+create function escribe()
+returns numeric as $body$
+select 24.0 
+$body$ language 'sql';
+
+select escribe();
+
+create function sumar(n1 int,n2 int)
+returns int as $$
+select n1+n2
+$$ language 'sql';
+
+select sumar(350,750);
+
+create function aCelsius(n1 real)
+returns real as $$
+select (n1-32)*5/9.0
+$$ language 'sql';
+
+select aCelsius(212);
+
+create function concatena(text,text)
+returns text as $$
+select $1 ||' '|| $2
+$$language 'sql';
+
+select concatena('hola','mundo');
+
+create function IGV(numeric)
+returns numeric as $$
+select ($1 * 0.18::numeric(8,2)) ::numeric(8,2);
+$$ language 'sql';
+
+select igv(100);
+
+create table repuestos (
+id int,
+nombre varchar(60),
+costo numeric(8,2),
+peso numeric(8,2)
+);
+
+insert into repuestos values
+(637,'cable',14.29,5),
+(638,'martillo',25.46,8),
+(639,'focos',7.35,32);
+
+select * from repuestos;
+select id,nombre,costo,igv(costo),costo+igv(costo) as total from repuestos order by id;
+
+create function cargo(n1 numeric)
+returns numeric as $$
+select case 
+	when n1<2 then cast (3.00 as numeric(8,2))
+	when n1>=2 and n1<4 then cast (5.00 as numeric(8,2))
+	when n1>=4 then cast (6.00 as numeric(8,2))
+end;
+$$ language 'sql';
+
+select id,nombre,costo,igv(costo),costo+igv(costo) as subtotal,cargo(peso),costo+igv(costo)+cargo(peso) as total from repuestos order by id;
+
+CREATE OR REPLACE FUNCTION saludar()
+RETURNS void AS $$
+BEGIN
+  RAISE NOTICE '¡Hola desde una función!';
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT saludar();  -- Muestra: NOTICE:  ¡Hola desde una función!
+
+
