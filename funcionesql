@@ -293,3 +293,51 @@ BEGIN
     SELECT COUNT(*) INTO total FROM estudiante;
 END;
 $$;
+
+
+----Ejemplos de SP
+create procedure aMayus(inout string text)
+language plpgsql 
+as $$  
+begin 
+	string:=upper(string);
+end
+$$ 
+
+--Llamada al SP
+call aMayus('Buenos dias');
+
+--ejemplo 2
+create table facturas(
+fac_id serial primary key,
+nombre_cliente text not null,
+monto_total numeric not null,
+fecha_fac date not null,
+cancelada boolean default false 
+);
+
+create procedure InsertaFactura(
+	in p_nombre_cliente text,
+	in p_monto numeric,
+	in p_fecha date)
+	language plpgsql 
+	as $$
+	begin
+		insert into facturas(nombre_cliente,monto_total,fecha_fac)
+		values(p_nombre_cliente,p_monto,p_fecha);
+	end
+	$$;
+call InsertaFactura('Victoria',10000,'2025-07-01');
+
+create procedure cancelar_factura(in p_fac_id int )
+language plpgsql
+as $$
+begin 
+	update facturas set cancelada=true
+	where fac_id=p_fac_id;
+end
+$$;
+
+call cancelar_factura(1);
+
+	
