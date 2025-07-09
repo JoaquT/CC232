@@ -236,3 +236,60 @@ $$ LANGUAGE plpgsql;
 SELECT saludar();  -- Muestra: NOTICE:  ¡Hola desde una función!
 
 
+------¿Qué es un Procedimiento Almacenado?-----
+Un procedimiento almacenado es un bloque de código SQL precompilado y almacenado en el servidor de base de datos, que se puede ejecutar múltiples veces con diferentes parámetros.
+
+🔹 Se diferencia de una función en que:
+
+Un procedimiento no necesariamente retorna un valor (puede retornar con OUT o no retornar nada).
+
+Se usa más para ejecutar acciones (como insertar, actualizar, borrar).
+
+En PostgreSQL, los procedimientos como tal se declaran con CREATE PROCEDURE, desde la versión 11.
+
+✅ Ventajas de los Procedimientos Almacenados
+Ventaja	Descripción
+🔁 Reutilización	Se puede llamar muchas veces desde diferentes aplicaciones.
+🚀 Rendimiento	El código está precompilado, reduciendo el tiempo de ejecución.
+🛡 Seguridad	Se puede controlar el acceso a través del procedimiento en vez de directamente a la tabla.
+🔄 Mantenimiento	Si la lógica cambia, solo se actualiza el procedimiento, no toda la app.
+
+🔧 Sintaxis básica en PostgreSQL (desde v11)
+
+CREATE PROCEDURE nombre_procedimiento(parámetros)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    -- Instrucciones SQL
+END;
+$$;
+📌 Para ejecutar un procedimiento:
+
+
+CALL nombre_procedimiento(argumentos);
+🧠 Ejemplo simple
+
+CREATE PROCEDURE insertar_estudiante(
+    IN pid INT,
+    IN pnombre TEXT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    INSERT INTO estudiante(id, nombre) VALUES (pid, pnombre);
+END;
+$$;
+Luego, lo llamas con:
+
+CALL insertar_estudiante(101, 'Laura');
+🔁 Procedimientos con parámetros OUT
+
+CREATE PROCEDURE obtener_total_estudiantes(
+    OUT total INT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    SELECT COUNT(*) INTO total FROM estudiante;
+END;
+$$;
