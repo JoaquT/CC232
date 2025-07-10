@@ -236,6 +236,18 @@ $$ LANGUAGE plpgsql;
 SELECT saludar();  -- Muestra: NOTICE:  ¡Hola desde una función!
 
 
+CREATE OR REPLACE FUNCTION premios_post_estreno()
+RETURNS TABLE(titulo TEXT, nombre_premio TEXT, anio_premio INTEGER) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT p.titulo, pr.nombre, pr.anio
+    FROM pelicula p
+    JOIN premio pr ON p.id_pelicula = pr.id_pelicula
+    WHERE pr.anio > p.anio_estreno;
+END;
+$$ LANGUAGE plpgsql;
+
+
 ------¿Qué es un Procedimiento Almacenado?-----
 Un procedimiento almacenado es un bloque de código SQL precompilado y almacenado en el servidor de base de datos, que se puede ejecutar múltiples veces con diferentes parámetros.
 
