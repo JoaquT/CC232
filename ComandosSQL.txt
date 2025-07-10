@@ -506,6 +506,15 @@ Reindexa si los índices se fragmentan mucho:
 
 REINDEX INDEX idx_nombre;
 
+---TIPOS DE INDICES----
+BTREE: CREATE INDEX idx_nombre ON tabla(columna);
+HASH: CREATE INDEX idx_nombre_hash ON tabla USING hash(columna);
+GIN: CREATE INDEX idx_contenido_gin ON tabla USING gin(columna);
+GIST: CREATE INDEX idx_gist ON tabla USING gist(columna);
+SP-GIST: CREATE INDEX idx_spgist ON tabla USING spgist(columna);
+BRIN: CREATE INDEX idx_brin ON tabla USING brin(columna);
+EXPRESSION INDEXES: CREATE INDEX idx_lower_nombre ON tabla(LOWER(nombre));
+PARTIAL INDEXES: CREATE INDEX idx_condicional ON tabla(columna) WHERE estado = 'activo';
 
 
 ---EJEMPLO DE SECUENCIAS----
