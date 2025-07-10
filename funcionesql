@@ -352,4 +352,54 @@ $$;
 
 call cancelar_factura(1);
 
-	
+--TRIGGERS---
+Un trigger es un objeto de base de datos que ejecuta automáticamente una acción definida (normalmente una función/procedimiento) cuando ocurre un evento específico en una tabla o vista: INSERT, UPDATE, DELETE o TRUNCATE.
+¿Para qué se usan?
+Los triggers son útiles para:
+
+Validar o transformar datos antes o después de una operación.
+
+Auditar cambios.
+
+Sincronizar tablas.
+
+Mantener integridad más allá de constraints.
+
+Automatizar cálculos o actualizaciones.
+
+Sintaxis básica
+1. Crear la función que ejecutará el trigger:
+CREATE OR REPLACE FUNCTION nombre_funcion()
+RETURNS trigger AS $$
+BEGIN
+    -- lógica aquí
+    RETURN NEW;  -- o RETURN OLD para DELETE
+END;
+$$ LANGUAGE plpgsql;
+2. Crear el trigger:
+CREATE TRIGGER nombre_trigger
+AFTER INSERT OR UPDATE ON tabla_objetivo
+FOR EACH ROW
+EXECUTE FUNCTION nombre_funcion();
+
+Variables especiales en triggers
+NEW: contiene los valores nuevos en INSERT o UPDATE.
+
+OLD: contiene los valores antiguos en UPDATE o DELETE.
+
+🧪 Ejemplo completo
+-- Función
+CREATE OR REPLACE FUNCTION auditar_insert()
+RETURNS trigger AS $$
+BEGIN
+    INSERT INTO auditoria(tabla, operacion, fecha)
+    VALUES ('clientes', 'INSERT', now());
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger
+CREATE TRIGGER tr_auditar_insert
+AFTER INSERT ON clientes
+FOR EACH ROW
+EXECUTE FUNCTION auditar_insert();
