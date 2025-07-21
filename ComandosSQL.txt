@@ -592,3 +592,34 @@ INSERT INTO docente (nombre, apellido) VALUES ('Ana', 'García');
 
 -- Ver los resultados:
 SELECT * FROM docente;
+
+
+//Uso de cursores en java--Apache netbeans///
+Primero se debe asociar el jdbc al archivo pom.xml del proyecto:
+<dependencies>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.7.2</version>
+        </dependency>
+    </dependencies>
+
+luego en el main:
+//Estructura comun para conectarse a una base de datos
+	String url = "jdbc:postgresql://localhost:5432/estudioanimacion";
+        String user="postgres"; //nombre del usuario de la base de datos
+        String password="ursawarrior135"; //contrasenia del usuario
+         try (Connection conn = DriverManager.getConnection(url, user, password);
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery("SELECT * FROM departamento")) {
+
+            while (rs.next()) {
+                String id = rs.getString("id_departamento");
+                String nombre = rs.getString("nombre");
+                System.out.println("ID: " + id + ", Nombre: " + nombre);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
